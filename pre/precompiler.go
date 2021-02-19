@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	"os"
 	"syscall"
 
@@ -9,7 +9,7 @@ import (
 	"go/parser"
 	"go/token"
 
-	"github.com/DQNEO/babygo/lib/fmt"
+	//"github.com/DQNEO/babygo/lib/fmt"
 	"github.com/DQNEO/babygo/lib/mylib"
 	"github.com/DQNEO/babygo/lib/path"
 	"github.com/DQNEO/babygo/lib/strconv"
@@ -27,7 +27,7 @@ func unexpectedKind(knd TypeKind) {
 }
 
 func throw(x interface{}) {
-	panic(fmt.Sprintf("%+v", x))
+	panic(fmt.Sprintf("%#v", x))
 }
 
 func parseImports(fset *token.FileSet, filename string) *ast.File {
@@ -2791,12 +2791,21 @@ func setStructFieldOffset(field *ast.Field, offset int) {
 	field.Doc = commentGroup
 }
 
-func getStructFields(structTypeSpec *ast.TypeSpec) []*ast.Field {
-	structType, ok := structTypeSpec.Type.(*ast.StructType)
-	if !ok {
-		throw(structTypeSpec.Type)
+func getStructUnderlyingType(structTypeSpec *ast.TypeSpec) *ast.StructType {
+	rhs := structTypeSpec.Type
+	switch typ := rhs.(type) {
+	case *ast.StructType:
+		return typ
+	case *ast.SelectorExpr:
+		fi := lookupForeignIdent(selector2QI(typ))
+		return getStructUnderlyingType(fi.Obj.Decl.(*ast.TypeSpec))
 	}
+	throw(rhs)
+	panic("TBI")
+}
 
+func getStructFields(structTypeSpec *ast.TypeSpec) []*ast.Field {
+	structType := getStructUnderlyingType(structTypeSpec)
 	return structType.Fields.List
 }
 

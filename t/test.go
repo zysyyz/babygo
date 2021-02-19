@@ -12,6 +12,15 @@ import (
 	"github.com/DQNEO/babygo/lib/strings"
 )
 
+type Type = mylib.Type
+
+func testTypeAlias() {
+	var mt *Type = &Type{
+		Field: 216,
+	}
+	fmt.Printf("mt.field=%d\n", mt.Field)
+}
+
 func testDerivedString() {
 	var qi QualifiedIdent = "hello"
 	sqi := string(qi)
@@ -1960,6 +1969,7 @@ func testMisc() {
 }
 
 func main() {
+	testTypeAlias()
 	testDerivedString()
 	testForeignType()
 	testReturnMixed()
